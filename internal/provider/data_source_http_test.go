@@ -162,11 +162,11 @@ func TestDataSource_withAuthorizationRequestHeader_403(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 
-  								request_headers = {
-    								"Authorization" = "unauthorized"
-  								}
+								request_headers = {
+									"Authorization" = "unauthorized"
+								}
 							}`, testServer.URL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.http.http_test", "response_body", ""),
@@ -193,7 +193,7 @@ func TestDataSource_utf8_200(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 							}`, testServer.URL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.http.http_test", "response_body", "1.0.0"),
@@ -221,7 +221,7 @@ func TestDataSource_utf16_200(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 							}`, testServer.URL),
 				// TODO: ExpectWarning can be used once https://github.com/hashicorp/terraform-plugin-testing/pull/17
 				// is merged and released.
@@ -252,7 +252,7 @@ func TestDataSource_x509cert(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
- 								url = "%s/x509-ca-cert/200"
+								url = "%s/x509-ca-cert/200"
 							}`, testServer.URL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.http.http_test", "response_body", "pem"),
@@ -349,9 +349,9 @@ func TestDataSource_Provisioner(t *testing.T) {
 								url = "%s"
 							}
 							resource "null_resource" "example" {
-  								provisioner "local-exec" {
-    								command = contains([201, 204], data.http.http_test.status_code)
-  								}
+								provisioner "local-exec" {
+									command = contains([201, 204], data.http.http_test.status_code)
+								}
 							}`, testServer.URL),
 				ExpectError: regexp.MustCompile(`Error running command 'false': exit status 1. Output:`),
 			},
@@ -361,9 +361,9 @@ func TestDataSource_Provisioner(t *testing.T) {
 								url = "%s"
 							}
 							resource "null_resource" "example" {
-  								provisioner "local-exec" {
-    								command = contains([200], data.http.http_test.status_code)
-  								}
+								provisioner "local-exec" {
+									command = contains([200], data.http.http_test.status_code)
+								}
 							}`, testServer.URL),
 				Check: resource.TestCheckResourceAttr("data.http.http_test", "status_code", "200"),
 			},
@@ -418,7 +418,7 @@ func TestDataSource_HEAD_204(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
- 								url = "%s"
+								url = "%s"
 								method = "HEAD" 
 							}`, testServer.URL),
 				Check: resource.ComposeTestCheckFunc(
@@ -444,10 +444,39 @@ func TestDataSource_UnsupportedMethod(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
- 								url = "%s"
+								url = "%s"
 								method = "OPTIONS" 
 							}`, testServer.URL),
 				ExpectError: regexp.MustCompile(`.*value must be one of: \["GET" "POST" "HEAD"`),
+			},
+		},
+	})
+}
+
+func TestDataSource_NoFollowRedirects(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlereFunc(func(w http.ResponseWriter, r *http.Request) {
+
+
+	}))
+	defer testServer.Close()
+
+	resource.ParallelTest(t, resource.TestCase {
+		ProtoV5ProviderFactories: protoV5ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+							data "http" "http_test" {
+								url  = "%s"
+								method = "GET"
+								no_follow_redirects = true
+							}`, testServer.URL),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.http.http_test", "response_headers.Location", "/200"),
+					resource.TestCheckResourceAttr("data.http.http_test", "response_doby", ""),
+					resource.TestCheckResourceAttr("data.http.http_test", "status_code", "302"),
+					resource.TestCheckResourceAttr("data.http.http_test", "location", fmt.Sprintf("%s/200", testServer.server.URL)),
+				),
+				
 			},
 		},
 	})
@@ -465,9 +494,9 @@ func TestDataSource_WithCACertificate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 
-  								ca_cert_pem = <<EOF
+								ca_cert_pem = <<EOF
 %s
 EOF
 							}`, testServer.URL, certToPEM(testServer.Certificate())),
@@ -490,9 +519,9 @@ func TestDataSource_WithCACertificateFalse(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 
-  								ca_cert_pem = "invalid"
+								ca_cert_pem = "invalid"
 							}`, testServer.URL),
 				ExpectError: regexp.MustCompile(`Can't add the CA certificate to certificate pool. Only PEM encoded\ncertificates are supported.`),
 			},
@@ -512,9 +541,9 @@ func TestDataSource_InsecureTrue(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 
-  								insecure = true
+								insecure = true
 							}`, testServer.URL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.http.http_test", "status_code", "200"),
@@ -536,9 +565,9 @@ func TestDataSource_InsecureFalse(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 
-  								insecure = false
+								insecure = false
 							}`, testServer.URL),
 				ExpectError: regexp.MustCompile(
 					fmt.Sprintf(
@@ -565,7 +594,7 @@ func TestDataSource_InsecureUnconfigured(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 							}`, testServer.URL),
 				ExpectError: regexp.MustCompile(
 					fmt.Sprintf(
@@ -591,7 +620,7 @@ func TestDataSource_UnsupportedInsecureCaCert(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
- 								url = "%s"
+								url = "%s"
 								insecure = true
 								ca_cert_pem = "invalid"
 							}`, testServer.URL),
@@ -672,7 +701,7 @@ func TestDataSource_Timeout(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 								request_timeout_ms = 5
 							}`, svr.URL),
 				ExpectError: regexp.MustCompile(`request exceeded the specified timeout: 5ms`),
@@ -690,7 +719,7 @@ func TestDataSource_Retry(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "https://%s.com"
+								url = "https://%s.com"
 								retry {
 									attempts = 1
 								}
@@ -730,7 +759,7 @@ func TestDataSource_MinDelay(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 								retry {
 									attempts = 1
 									min_delay_ms = %d
@@ -759,7 +788,7 @@ func TestDataSource_MaxDelay(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 								retry {
 									attempts = 1
 									max_delay_ms = 300
@@ -785,7 +814,7 @@ func TestDataSource_MaxDelayAtLeastEqualToMinDelay(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 							data "http" "http_test" {
-  								url = "%s"
+								url = "%s"
 								retry {
 									attempts = 1
 									min_delay_ms = 300
