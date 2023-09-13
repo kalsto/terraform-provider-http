@@ -94,9 +94,8 @@ a 5xx-range (except 501) status code is received. For further details see
 				},
 			},
 
-			"no_follow_redirects": {
+			"no_follow_redirects": schema.BoolAttribute{
 				Description: "Do not follow HTTP redirects.",
-				Type:        types.BoolType,
 				Optional:    true,
 			},
 			
@@ -165,10 +164,9 @@ a 5xx-range (except 501) status code is received. For further details see
 			"location": schema.StringAttribute{
 				Description: `The URL from the request that was sent ot obtain the final response.` +
 						` If the final server response included a Location header then this value is set to the absolute path of that location, relative to the URL that made the request.`,
-				ElementType: types.StringType,
 				Computed: true,
 
-			}
+			},
 		},
 
 		Blocks: map[string]schema.Block{
@@ -385,19 +383,19 @@ func (d *httpDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	model.Body = types.StringValue(responseBody)
 	model.ResponseBodyBase64 = types.StringValue(responseBodyBase64Std)
 	model.StatusCode = types.Int64Value(int64(response.StatusCode))
-	model.Location = types.String(response.Request.URL.String())
+	model.Location = types.StringValue(response.Request.URL.String())
 
-	if location := response.Header.Get("Location"); location != "" {
-		u, err := response.Request.URL.Parse(location)
-		if err != nil {
-			resp.Diagnostics.AddError (
-				"Failed to parse the HTTP response Location header URL",
-				fmt.Sprrintf("Error parsing Location header URL: %s", err),
-			)
-			return
-		}
-		model.Location.Value = u.String()
-	}
+	// if location := response.Header.Get("Location"); location != "" {
+	// 	u, err := response.Request.URL.Parse(location)
+	// 	if err != nil {
+	// 		resp.Diagnostics.AddError (
+	// 			"Failed to parse the HTTP response Location header URL",
+	// 			fmt.Sprintf("Error parsing Location header URL: %s", err),
+	// 		)
+	// 		return
+	// 	}
+	// 	model.Location = u.
+	// }
 
 	diags = resp.State.Set(ctx, model)
 	resp.Diagnostics.Append(diags...)
