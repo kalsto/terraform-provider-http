@@ -298,6 +298,16 @@ func (d *httpDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		retryClient.RetryWaitMax = time.Duration(retry.MaxDelay.ValueInt64()) * time.Millisecond
 	}
 
+
+	client := &http.Client{}
+	if !model.NoFollowRedirects.IsNull() {
+		if model.NoFollowRedirects {
+			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			}
+		}
+	}
+
 	request, err := retryablehttp.NewRequestWithContext(ctx, method, requestURL, requestBody)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -385,17 +395,17 @@ func (d *httpDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	model.StatusCode = types.Int64Value(int64(response.StatusCode))
 	model.Location = types.StringValue(response.Request.URL.String())
 
-	// if location := response.Header.Get("Location"); location != "" {
-	// 	u, err := response.Request.URL.Parse(location)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError (
-	// 			"Failed to parse the HTTP response Location header URL",
-	// 			fmt.Sprintf("Error parsing Location header URL: %s", err),
-	// 		)
-	// 		return
-	// 	}
-	// 	model.Location = u.
-	// }
+	if location := response.Header.Get("Location"); location != "" {
+		u, err := response.Request.URL.Parse(location)
+		if err != nil {
+			resp.Diagnostics.AddError (
+				"Failed to parse the HTTP response Location header URL",
+				fmt.Sprintf("Error parsing Location header URL: %s", err),
+			)
+			return
+		}
+		model.Location.Value = u.String()
+	}
 
 	diags = resp.State.Set(ctx, model)
 	resp.Diagnostics.Append(diags...)
@@ -405,6 +415,7 @@ type modelV0 struct {
 	ID                 types.String `tfsdk:"id"`
 	URL                types.String `tfsdk:"url"`
 	Method             types.String `tfsdk:"method"`
+	NoFollowRedirects  types.Bool   `tfsdk:"no_follow_redirects"`
 	RequestHeaders     types.Map    `tfsdk:"request_headers"`
 	RequestBody        types.String `tfsdk:"request_body"`
 	RequestTimeout     types.Int64  `tfsdk:"request_timeout_ms"`
