@@ -317,7 +317,7 @@ func (d *httpDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		request.Header.Set(name, header)
 	}
 
-	client := &http.Client{}
+	//client := &http.Client{}
 	if !model.NoFollowRedirects.IsNull() {
 		if model.NoFollowRedirects.ValueBool() {
 			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -424,7 +424,7 @@ type modelV0 struct {
 	Body               types.String `tfsdk:"body"`
 	ResponseBodyBase64 types.String `tfsdk:"response_body_base64"`
 	StatusCode         types.Int64  `tfsdk:"status_code"`
-	Location           types.String `tfsdk:"location"`
+	// Location           types.String `tfsdk:"location"`
 }
 
 type retryModel struct {
