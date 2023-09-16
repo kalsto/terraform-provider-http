@@ -453,35 +453,6 @@ func TestDataSource_UnsupportedMethod(t *testing.T) {
 	})
 }
 
-func TestDataSource_NoFollowRedirects(t *testing.T) {
-	testServer := httptest.NewServer(http.HandlereFunc(func(w http.ResponseWriter, r *http.Request) {
-
-
-	}))
-	defer testServer.Close()
-
-	resource.ParallelTest(t, resource.TestCase {
-		ProtoV5ProviderFactories: protoV5ProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-							data "http" "http_test" {
-								url  = "%s"
-								method = "GET"
-								no_follow_redirects = true
-							}`, testServer.URL),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.http.http_test", "response_headers.Location", "/200"),
-					resource.TestCheckResourceAttr("data.http.http_test", "response_doby", ""),
-					resource.TestCheckResourceAttr("data.http.http_test", "status_code", "302"),
-					resource.TestCheckResourceAttr("data.http.http_test", "location", fmt.Sprintf("%s/200", testServer.server.URL)),
-				),
-				
-			},
-		},
-	})
-}
-
 func TestDataSource_WithCACertificate(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
