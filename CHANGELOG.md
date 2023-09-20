@@ -1,3 +1,9 @@
+## 3.4.1 (September 20, 2023)
+
+ENHANCEMENTS:
+
+* data-source/http: `location` has been added and contains the response from an Authorization request to an API endpoint. It is part of the issue listed here: ([#170](https://github.com/hashicorp/terraform-provider-http/issues/170))
+
 ## 3.4.0 (June 21, 2023)
 
 ENHANCEMENTS:
