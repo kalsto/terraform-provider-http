@@ -40,6 +40,7 @@ version it implements, and Terraform:
 * [golangci-lint](https://golangci-lint.run/usage/install/#local-installation) (optional)
 
 ## Development
+- Adding to the README.md so there's some updates to recheck workflow
 
 ### Building
 
