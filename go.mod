@@ -1,4 +1,4 @@
-module github.com/terraform-providers/terraform-provider-http
+module github.com/kalsto/terraform-provider-http
 
 go 1.20
 
