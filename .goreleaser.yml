@@ -1,5 +1,5 @@
 archives:
-  # - files:
+  - files:
   #     # Ensure only built binary is archived
   #     - 'none*'
     format: zip
