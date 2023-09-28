@@ -1,8 +1,8 @@
 archives:
-  - files:
+  #- files:
   #     # Ensure only built binary is archived
   #     - 'none*'
-    format: zip
+  - format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 before:
   hooks:
@@ -79,3 +79,6 @@ signs:
   #   cmd: signore
   #   id: key-id
   #   signature: ${artifact}.72D7468F.sig
+
+changelog:
+  skip: true
