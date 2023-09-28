@@ -58,8 +58,6 @@ release:
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
   ids:
     - none
-  changelog:
-    skip: true
 signs:
   - artifacts: checksum
     args:
